@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infografis Interaktif: Penyebab Kematian di DKI Jakarta Berdasarkan ICD-10 (2025)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root, [data-theme="light"] {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --grid-line: #e2e8f0;
+      --accent: #e11d48;
+      --accent-soft: rgba(225, 29, 72, 0.1);
+      --sea-bg: #e0f2fe;
+      --sea-border: #bae6fd;
+      --map-stroke: #ffffff;
+      --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0b1120;
+      --bg-card: #111827;
+      --bg-subtle: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --grid-line: rgba(148, 163, 184, 0.15);
+      --accent: #fb7185;
+      --accent-soft: rgba(251, 113, 133, 0.15);
+      --sea-bg: #0c192c;
+      --sea-border: #1e3a5f;
+      --map-stroke: #0f172a;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .infographic-wrapper {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 16px 36px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .pill-btn.active {
+      background: #e11d48;
+      border-color: #e11d48;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.28);
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .seg-btn {
+      padding: 6px 13px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Map Styling */
+    .map-Feature {
+      cursor: pointer;
+      stroke: var(--map-stroke);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      transition: filter 0.18s ease, stroke-width 0.18s ease, opacity 0.18s ease;
+    }
+
+    .map-Feature:hover {
+      filter: brightness(1.08);
+    }
+
+    .map-Feature.selected {
+      stroke: #0f172a;
+      stroke-width: 3.5;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
+    }
+
+    [data-theme="dark"] .map-Feature.selected {
+      stroke: #fbbf24;
+    }
+
+    .map-Feature.dimmed {
+      opacity: 0.42;
+    }
+
+    .map-label-group {
+      pointer-events: none;
+    }
+
+    /* Vertical Bar Chart (Column Chart) Styling */
+    .vchart-area {
+      position: relative;
+      padding: 20px 12px 8px 54px;
+      margin-top: 6px;
+    }
+
+    .vchart-plot {
+      position: relative;
+      height: 270px;
+      display: grid;
+      align-items: end;
+      gap: 10px;
+      border-bottom: 2px solid var(--text-muted);
+      padding: 0 8px;
+    }
+
+    .vchart-gridline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-top: 1px dashed var(--grid-line);
+      pointer-events: none;
+    }
+
+    .vchart-ylabel {
+      position: absolute;
+      left: -52px;
+      top: -9px;
+      width: 44px;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .vcol-wrapper {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+
+    .vcol-wrapper:hover .vcol-bar {
+      filter: brightness(1.12);
+      transform: scaleX(1.05);
+    }
+
+    .vcol-wrapper:hover .vcol-val {
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .vcol-val {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .vcol-subval {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      white-space: nowrap;
+    }
+
+    .vcol-bar {
+      width: 100%;
+      max-width: 56px;
+      border-radius: 8px 8px 0 0;
+      transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .vchart-xlabels {
+      display: grid;
+      gap: 10px;
+      padding: 10px 8px 0;
+    }
+
+    .vcol-xlabel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    /* Pie Chart Slice Styling */
+    .pie-slice {
+      cursor: pointer;
+      stroke: var(--bg-card);
+      stroke-width: 2.2;
+      stroke-linejoin: round;
+      transform-origin: 120px 120px;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .pie-slice:hover {
+      transform: scale(1.035);
+      filter: brightness(1.08);
+    }
+
+    .pie-label {
+      pointer-events: none;
+      font-size: 11.5px;
+      font-weight: 800;
+      fill: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      max-width: 320px;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+      font-size: 12.5px;
+    }
+
+    #tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-2-top {
+      display: grid;
+      grid-template-columns: 6fr 6fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 960px) {
+      .grid-3, .grid-2-top {
+        grid-template-columns: 1fr;
+      }
+      .vchart-scroll {
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+      .vchart-inner {
+        min-width: 780px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="tooltip" role="tooltip"></div>
+
+  <div class="infographic-wrapper">
+    <!-- BARIS 1: HEADER INFOGRAFIS, 3 KPI RINGKAS, & FILTER WILAYAH -->
+    <header class="card" style="margin-bottom: 18px; border-top: 5px solid #e11d48;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+        <div style="max-width: 850px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 800; margin-bottom: 8px;">
+            <span>INFOGRAFIS KESEHATAN MASYARAKAT • DINAS KESEHATAN PROVINSI DKI JAKARTA</span>
+            <span>•</span>
+            <span class="mono">DATA 2025</span>
+          </div>
+          <h1 style="font-size: clamp(22px, 2.7vw, 31px); font-weight: 800; margin: 0 0 6px 0; line-height: 1.22;">
+            Peta &amp; Anatomi Penyebab Kematian di DKI Jakarta Berdasarkan Klasifikasi ICD-10
+          </h1>
+          <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">
+            Distribusi <strong>28.699 kematian</strong> (10 penyebab tertinggi per wilayah administrasi pada periode 2025) memperlihatkan dominasi <strong>Penyakit Tidak Menular (76,03%)</strong>, dengan kelompok <strong>Sistem Sirkulasi/Kardiovaskular (Bab IX)</strong> menyumbang <strong>40,13%</strong> dari total kematian tercatat.
+          </p>
+        </div>
+
+        <button class="pill-btn" onclick="toggleTheme()" id="theme-btn" title="Ubah Mode Tampilan">
+          <span id="theme-icon">🌙</span>
+          <span id="theme-text">Mode Gelap</span>
+        </button>
+      </div>
+
+      <!-- 3 Kartu KPI Ringkas -->
+      <div class="grid-3" style="margin-bottom: 16px;">
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 13px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Kematian Tercatat</span>
+            <span id="kpi-badge-region" style="font-size: 11.5px; font-weight: 800; color: var(--accent);">DKI Jakarta (6 Wilayah)</span>
+          </div>
+          <div class="mono" style="font-size: 27px; font-weight: 800; margin: 4px 0 2px;" id="kpi-total">28.699 Jiwa</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="kpi-total-desc">Akumulasi 10 penyebab tertinggi di seluruh wilayah</div>
+        </div>
+
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 13px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Penyebab Peringkat #1</span>
+            <span class="mono" id="kpi-top-code" style="font-size: 11.5px; font-weight: 800; padding: 1px 7px; border-radius: 5px; background: rgba(225, 29, 72, 0.12); color: #e11d48;">Kode I10–I15</span>
+          </div>
+          <div style="font-size: 19px; font-weight: 800; margin: 5px 0 3px;" id="kpi-top-name">Penyakit Hipertensi</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="kpi-top-desc">4.389 jiwa (15,29% dari total wilayah terpilih)</div>
+        </div>
+
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 13px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Dominasi Kardiovaskular (Bab IX)</span>
+            <span class="mono" style="font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">I10–I64</span>
+          </div>
+          <div class="mono" style="font-size: 27px; font-weight: 800; color: #e11d48; margin: 4px 0 2px;" id="kpi-cardio">40,13%</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="kpi-cardio-desc">11.516 jiwa (Hipertensi, Jantung Iskemik, Gagal Jantung, Stroke)</div>
+        </div>
+      </div>
+
+      <!-- Baris Filter Wilayah Terintegrasi -->
+      <div style="padding-top: 14px; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <span style="font-size: 12.5px; font-weight: 800; color: var(--text-secondary); margin-right: 4px;">
+            📍 Filter Wilayah:
+          </span>
+          <div id="region-buttons" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);">
+          💡 <em>Klik wilayah pada peta atau tombol untuk memperbarui seluruh diagram</em>
+        </div>
+      </div>
+    </header>
+
+    <!-- BARIS 2 (2 KOLOM SEIMBANG): VISUALISASI 1 (PETA GEOGRAFIS DKI JAKARTA) & VISUALISASI 2 (DONUT CHART BAB ICD-10) -->
+    <section class="grid-2-top" style="margin-bottom: 18px;">
+      <!-- KIRI: VISUALISASI 1 - PETA GEOGRAFIS ASLI DKI JAKARTA -->
+      <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <span style="font-size: 11.5px; font-weight: 800; color: var(--accent); text-transform: uppercase;">Visualisasi 1 • Peta Geografis Interaktif</span>
+              <h2 style="font-size: 17px; font-weight: 800; margin: 2px 0 0 0;">Sebaran Kematian per Wilayah DKI Jakarta</h2>
+            </div>
+            <button class="pill-btn" style="padding: 4px 10px; font-size: 12px;" onclick="selectRegion('ALL')">
+              Reset Provinsi
+            </button>
+          </div>
+
+          <div style="background: var(--sea-bg); border: 1px solid var(--sea-border); border-radius: 14px; overflow: hidden;">
+            <svg id="dki-map-svg" viewBox="0 0 560 505" style="width: 100%; height: auto; display: block;">
+              <defs>
+                <filter id="labelShadow" x="-10%" y="-10%" width="120%" height="125%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.35" />
+                </filter>
+              </defs>
+
+              <text x="405" y="42" fill="#0284c7" opacity="0.55" font-size="11.5" font-weight="800" letter-spacing="1.8">TELUK JAKARTA</text>
+              <text x="405" y="56" fill="#0284c7" opacity="0.45" font-size="10" font-weight="600">(LAUT JAWA)</text>
+
+              <!-- INSET KAB. ADM. KEPULAUAN SERIBU -->
+              <g id="map-reg-KAB. ADM. KEP. SERIBU" class="map-Feature"
+                 onclick="selectRegion('KAB. ADM. KEP. SERIBU')"
+                 onmousemove="showMapTooltip(event, 'KAB. ADM. KEP. SERIBU')"
+                 onmouseleave="hideTooltip()">
+                <rect x="14" y="12" width="256" height="68" rx="10" fill="#38bdf8" fill-opacity="0.22" stroke="#0284c7" stroke-width="1.6" stroke-dasharray="5,3" />
+                <circle cx="38" cy="32" r="5" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+                <circle cx="54" cy="25" r="3.8" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+                <circle cx="50" cy="45" r="6" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+                <circle cx="70" cy="40" r="4.8" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+                <circle cx="66" cy="58" r="6.5" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+                <circle cx="88" cy="54" r="4.5" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+              </g>
+
+              <!-- 5 KOTA ADMINISTRASI DARATAN DKI JAKARTA -->
+              <path id="map-reg-KOTA ADM. JAKARTA UTARA" class="map-Feature"
+                    d="M 54,113.6 L 87.4,117.6 L 117.4,128.4 L 144.1,114.9 L 180.8,123 L 204.1,133.8 L 237.5,128.4 L 264.2,147.4 L 304.2,144.7 L 342.5,128.4 L 375.9,113.6 L 414.3,120.3 L 459.3,109.5 L 511,104.1 L 514.3,144.7 L 501,181.2 L 487.6,206.8 L 459.3,209.5 L 430.9,220.4 L 404.3,225.8 L 377.6,217.7 L 347.5,193.3 L 314.2,179.8 L 280.8,171.7 L 257.5,169 L 225.8,174.4 L 187.4,177.1 L 147.4,169 L 110.7,155.5 L 74,144.7 L 54,113.6 Z" fill="#f43f5e"
+                    onclick="selectRegion('KOTA ADM. JAKARTA UTARA')"
+                    onmousemove="showMapTooltip(event, 'KOTA ADM. JAKARTA UTARA')"
+                    onmouseleave="hideTooltip()" />
+
+              <path id="map-reg-KOTA ADM. JAKARTA BARAT" class="map-Feature"
+                    d="M 54,113.6 L 74,144.7 L 110.7,155.5 L 147.4,169 L 187.4,177.1 L 225.8,174.4 L 257.5,169 L 264.2,187.9 L 240.8,206.8 L 230.8,231.2 L 224.1,266.3 L 190.8,279.8 L 157.4,290.6 L 127.4,293.4 L 100.7,277.1 L 87.4,252.8 L 64,231.2 L 44,204.1 L 47.3,171.7 L 42.3,140.6 L 54,113.6 Z" fill="#e11d48"
+                    onclick="selectRegion('KOTA ADM. JAKARTA BARAT')"
+                    onmousemove="showMapTooltip(event, 'KOTA ADM. JAKARTA BARAT')"
+                    onmouseleave="hideTooltip()" />
+
+              <path id="map-reg-KOTA ADM. JAKARTA PUSAT" class="map-Feature"
+                    d="M 257.5,169 L 280.8,171.7 L 314.2,179.8 L 347.5,193.3 L 377.6,217.7 L 367.6,239.3 L 344.2,252.8 L 324.2,271.7 L 290.8,269 L 264.2,285.2 L 240.8,282.5 L 224.1,266.3 L 230.8,231.2 L 240.8,206.8 L 264.2,187.9 L 257.5,169 Z" fill="#fb7185"
+                    onclick="selectRegion('KOTA ADM. JAKARTA PUSAT')"
+                    onmousemove="showMapTooltip(event, 'KOTA ADM. JAKARTA PUSAT')"
+                    onmouseleave="hideTooltip()" />
+
+              <path id="map-reg-KOTA ADM. JAKARTA SELATAN" class="map-Feature"
+                    d="M 127.4,293.4 L 157.4,290.6 L 190.8,279.8 L 224.1,266.3 L 240.8,282.5 L 264.2,285.2 L 290.8,269 L 324.2,271.7 L 337.5,293.4 L 330.9,320.4 L 324.2,352.8 L 317.5,388 L 307.5,425.8 L 297.5,466.4 L 264.2,479.9 L 230.8,463.7 L 217.5,431.2 L 190.8,415 L 167.4,393.4 L 154.1,360.9 L 137.4,328.5 L 127.4,293.4 Z" fill="#f43f5e"
+                    onclick="selectRegion('KOTA ADM. JAKARTA SELATAN')"
+                    onmousemove="showMapTooltip(event, 'KOTA ADM. JAKARTA SELATAN')"
+                    onmouseleave="hideTooltip()" />
+
+              <path id="map-reg-KOTA ADM. JAKARTA TIMUR" class="map-Feature"
+                    d="M 377.6,217.7 L 404.3,225.8 L 430.9,220.4 L 459.3,209.5 L 487.6,206.8 L 517.7,225.8 L 514.3,260.9 L 494.3,293.4 L 461,320.4 L 434.3,347.4 L 427.6,382.6 L 437.6,420.4 L 417.6,461 L 380.9,482.6 L 337.5,471.8 L 297.5,466.4 L 307.5,425.8 L 317.5,388 L 324.2,352.8 L 330.9,320.4 L 337.5,293.4 L 324.2,271.7 L 344.2,252.8 L 367.6,239.3 L 377.6,217.7 Z" fill="#9f1239"
+                    onclick="selectRegion('KOTA ADM. JAKARTA TIMUR')"
+                    onmousemove="showMapTooltip(event, 'KOTA ADM. JAKARTA TIMUR')"
+                    onmouseleave="hideTooltip()" />
+
+              <!-- LABEL PILL KONTRAS TINGGI (JELAS & TIDAK MENUTUPI KONTUR PETA) -->
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="106" y="21" width="154" height="48" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.4" />
+                <text x="183" y="40" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="800">KEP. SERIBU (INSET)</text>
+                <text x="183" y="57" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="700" class="mono">84 jiwa (0,29%)</text>
+              </g>
+
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="318" y="120" width="146" height="46" rx="8" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" />
+                <text x="391" y="139" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="800">JAKARTA UTARA</text>
+                <text x="391" y="156" text-anchor="middle" fill="#fda4af" font-size="11" font-weight="700" class="mono">5.085 jiwa (17,7%)</text>
+              </g>
+
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="52" y="196" width="146" height="46" rx="8" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" />
+                <text x="125" y="215" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="800">JAKARTA BARAT</text>
+                <text x="125" y="232" text-anchor="middle" fill="#fcd34d" font-size="11" font-weight="700" class="mono">6.570 jiwa (22,9%)</text>
+              </g>
+
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="222" y="206" width="142" height="46" rx="8" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" />
+                <text x="293" y="225" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="800">JAKARTA PUSAT</text>
+                <text x="293" y="242" text-anchor="middle" fill="#fda4af" font-size="11" font-weight="700" class="mono">3.397 jiwa (11,8%)</text>
+              </g>
+
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="338" y="308" width="152" height="48" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="1.6" />
+                <text x="414" y="328" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="800">JAKARTA TIMUR</text>
+                <text x="414" y="345" text-anchor="middle" fill="#fde047" font-size="11.5" font-weight="800" class="mono">8.008 jiwa (27,9%)</text>
+              </g>
+
+              <g class="map-label-group" filter="url(#labelShadow)">
+                <rect x="148" y="362" width="150" height="46" rx="8" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" />
+                <text x="223" y="381" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="800">JAKARTA SELATAN</text>
+                <text x="223" y="398" text-anchor="middle" fill="#fda4af" font-size="11" font-weight="700" class="mono">5.555 jiwa (19,4%)</text>
+              </g>
+
+              <!-- Legenda Skala Warna Choropleth -->
+              <g transform="translate(14, 456)">
+                <rect x="0" y="0" width="252" height="36" rx="8" fill="#0f172a" fill-opacity="0.88" />
+                <text x="10" y="13" fill="#cbd5e1" font-size="9.5" font-weight="700">SKALA JUMLAH KEMATIAN WILAYAH:</text>
+                <rect x="10" y="19" width="26" height="9" rx="2" fill="#38bdf8" />
+                <text x="40" y="27" fill="#f8fafc" font-size="9.5">&lt;100</text>
+                <rect x="72" y="19" width="26" height="9" rx="2" fill="#fb7185" />
+                <text x="102" y="27" fill="#f8fafc" font-size="9.5">3–5 rb</text>
+                <rect x="140" y="19" width="26" height="9" rx="2" fill="#e11d48" />
+                <text x="170" y="27" fill="#f8fafc" font-size="9.5">5–7 rb</text>
+                <rect x="206" y="19" width="20" height="9" rx="2" fill="#9f1239" />
+                <text x="230" y="27" fill="#fde047" font-size="9.5" font-weight="700">&gt;8 rb</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px; padding: 11px 14px; border-radius: 10px; background: var(--bg-subtle); border-left: 4px solid #e11d48; font-size: 12.5px; color: var(--text-secondary);" id="region-insight-box"></div>
+      </div>
+
+      <!-- KANAN: VISUALISASI 2 - DIAGRAM LINGKARAN (PIE CHART) BAB ICD-10 -->
+      <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 11.5px; font-weight: 800; color: var(--accent); text-transform: uppercase;">Visualisasi 2 • Diagram Lingkaran (Pie Chart)</span>
+            <h2 style="font-size: 17px; font-weight: 800; margin: 2px 0 0 0;">
+              Proporsi Kematian Menurut Bab Sistem Organ (ICD-10)
+            </h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;" id="donut-subtitle">
+              Komposisi bagian terhadap keseluruhan (100%) — Semua Wilayah (DKI Jakarta)
+            </p>
+          </div>
+
+          <!-- Pie Chart SVG + Legenda Terstruktur Sesuai Kaidah Pie Chart -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+            <div style="position: relative; width: 236px; height: 236px;">
+              <svg id="pie-chart-svg" viewBox="0 0 240 240" style="width: 100%; height: 100%; display: block;"></svg>
+            </div>
+
+            <div id="donut-legend" style="width: 100%; display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px; padding: 11px 14px; border-radius: 10px; background: var(--bg-subtle); border: 1px solid var(--border-color); font-size: 12.5px; color: var(--text-secondary);">
+          📌 <strong>Kaidah Penyajian Pie Chart:</strong> Irisan diurutkan searah jarum jam dari arah jam 12 (terbesar ke terkecil), sedangkan kategori dengan proporsi kecil (<span class="mono">&lt;5%</span>) digabungkan ke dalam <em>Bab Lainnya</em> agar setiap juring dan label persentase terbaca jelas (total tepat <span class="mono">100%</span>).
+        </div>
+      </div>
+    </section>
+
+    <!-- BARIS 3 (FULL WIDTH): VISUALISASI 3 - DIAGRAM BATANG (BAR CHART) -->
+    <section class="card" style="margin-bottom: 18px;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+        <div>
+          <span style="font-size: 11.5px; font-weight: 800; color: var(--accent); text-transform: uppercase;">Visualisasi 3 • Diagram Batang (Bar Chart)</span>
+          <h2 style="font-size: 18px; font-weight: 800; margin: 2px 0 0 0;" id="bar-title">
+            Peringkat Penyebab Kematian Berdasarkan Kode ICD-10 — Semua Wilayah (DKI Jakarta)
+          </h2>
+        </div>
+
+        <!-- Toggle Satuan (Elemen Interaktif 2) -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Satuan Sumbu Y:</span>
+          <div class="seg-group">
+            <button id="btn-metric-count" class="seg-btn active" onclick="setMetric('count')">Jumlah Kasus (Jiwa)</button>
+            <button id="btn-metric-pct" class="seg-btn" onclick="setMetric('pct')">Proporsi Wilayah (%)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legenda Warna Bab ICD-10 pada Grafik Batang -->
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary);">
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #e11d48;"></span><strong>Bab IX:</strong> Sirkulasi/Kardiovaskular</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #d97706;"></span><strong>Bab II:</strong> Neoplasma (Kanker)</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #7c3aed;"></span><strong>Bab IV:</strong> Endokrin (Diabetes)</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #0284c7;"></span><strong>Bab X:</strong> Pernapasan (Pneumonia)</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #4f46e5;"></span><strong>Bab XIV:</strong> Ginjal</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #059669;"></span><strong>Bab I:</strong> Infeksi (TBC &amp; Sepsis)</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #db2777;"></span><strong>Bab XVI/XI:</strong> Perinatal &amp; Hati</span>
+      </div>
+
+      <!-- Kontainer Vertical Column Chart -->
+      <div class="vchart-scroll">
+        <div class="vchart-inner vchart-area" id="vertical-bar-chart"></div>
+      </div>
+    </section>
+
+    <!-- BARIS 4: TIGA TEMUAN UTAMA (3 KOLOM RINGKAS, BEBAS KLAIM SEBAB-AKIBAT) -->
+    <section class="grid-3" style="margin-bottom: 18px;">
+      <div class="card" style="padding: 16px 18px;">
+        <div style="font-size: 11px; font-weight: 800; color: #e11d48; text-transform: uppercase; margin-bottom: 4px;">
+          Temuan Utama 1 • Beban Kardiovaskular
+        </div>
+        <h3 style="font-size: 15px; font-weight: 800; margin: 0 0 6px 0;">
+          Empat Penyakit Bab IX Menyumbang 40,13% Total Kematian
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">
+          Gabungan <strong>Hipertensi (<span class="mono">4.389</span> jiwa / <span class="mono">15,29%</span>)</strong>, <strong>Jantung Iskemik (<span class="mono">3.803</span> jiwa / <span class="mono">13,25%</span>)</strong>, <strong>Gagal Jantung (<span class="mono">1.740</span> jiwa / <span class="mono">6,06%</span>)</strong>, dan <strong>Stroke (<span class="mono">1.584</span> jiwa / <span class="mono">5,52%</span>)</strong> mencapai <strong class="mono">11.516 jiwa</strong> dari total <strong class="mono">28.699</strong> kematian tercatat.
+        </p>
+      </div>
+
+      <div class="card" style="padding: 16px 18px;">
+        <div style="font-size: 11px; font-weight: 800; color: #d97706; text-transform: uppercase; margin-bottom: 4px;">
+          Temuan Utama 2 • Variasi Peringkat #1 Wilayah
+        </div>
+        <h3 style="font-size: 15px; font-weight: 800; margin: 0 0 6px 0;">
+          Pergeseran Penyebab #1 di Jakarta Timur &amp; Jakarta Barat
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">
+          Sementara Hipertensi menjadi penyebab #1 di 4 wilayah lainnya, <strong>Jakarta Timur (<span class="mono">8.008</span> jiwa)</strong> mencatat <strong>Penyakit Jantung Iskemik</strong> di urutan #1 (<strong class="mono">1.262</strong> jiwa / <strong class="mono">15,76%</strong>), dan <strong>Jakarta Barat (<span class="mono">6.570</span> jiwa)</strong> mencatat <strong>Neoplasma/Kanker</strong> di urutan #1 (<strong class="mono">1.005</strong> jiwa / <strong class="mono">15,30%</strong>).
+        </p>
+      </div>
+
+      <div class="card" style="padding: 16px 18px;">
+        <div style="font-size: 11px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 4px;">
+          Temuan Utama 3 • Kepulauan vs Kota Daratan
+        </div>
+        <h3 style="font-size: 15px; font-weight: 800; margin: 0 0 6px 0;">
+          Profil Khusus Kepulauan Seribu &amp; Beban Infeksi Paru
+        </h3>
+        <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0;">
+          Di <strong>Kepulauan Seribu (<span class="mono">84</span> jiwa)</strong>, Hipertensi (<strong class="mono">34,52%</strong>) dan Diabetes (<strong class="mono">19,05%</strong>) mencakup lebih dari separuh kematian disertai <strong>Kondisi Perinatal (<span class="mono">9,52%</span>)</strong> di peringkat #3. Di 5 kota daratan, <strong>Pneumonia (<span class="mono">10,84%</span>)</strong> dan <strong>TBC (<span class="mono">7,11%</span>)</strong> tetap masuk 8 besar.
+        </p>
+      </div>
+    </section>
+
+    <!-- FOOTER SUMBER DATA RESMI -->
+    <footer class="card" style="padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="font-size: 12.5px; color: var(--text-secondary);">
+        <strong>Sumber Data Resmi:</strong> Dinas Kesehatan Provinsi DKI Jakarta (2025), <em>Data Kematian Berdasarkan Penyebab Kematian (ICD-10)</em>, Portal Satu Data Jakarta.
+        <a href="https://satudata.jakarta.go.id/open-data/detail?kategori=dataset&page_url=data-kematian-berdasarkan-penyebab-kematian-international-classification-of-diseases-revisi-ke-10-icd-10-2&data_no=1" target="_blank" rel="noopener noreferrer" style="color: var(--accent); font-weight: 700; margin-left: 6px;">
+          [Buka Link Sumber Data ↗]
+        </a>
+      </div>
+      <button class="pill-btn" onclick="downloadCSV()" style="font-size: 12px;">
+        📥 Unduh Dataset (.CSV)
+      </button>
+    </footer>
+  </div>
+
+  <script>
+    const DATASET = {"grand_total":28699,"region_totals":{"KAB. ADM. KEP. SERIBU":84,"KOTA ADM. JAKARTA BARAT":6570,"KOTA ADM. JAKARTA SELATAN":5555,"KOTA ADM. JAKARTA TIMUR":8008,"KOTA ADM. JAKARTA UTARA":5085,"KOTA ADM. JAKARTA PUSAT":3397},"icd_metadata":{"HYPERTENSIVE DISEASES (I10-I15)":{"code":"I10–I15","name_id":"Penyakit Hipertensi","name_en":"Hypertensive Diseases","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#e11d48","description":"Tekanan darah tinggi primer maupun sekunder yang berdampak pada jantung dan pembuluh darah."},"NEOPLASMS (C00-C97)":{"code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","name_en":"Neoplasms","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#d97706","description":"Pertumbuhan sel abnormal/ganas pada berbagai jaringan dan organ tubuh."},"ISCHAEMIC HEART DISEASES (I20-I25)":{"code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","name_en":"Ischaemic Heart Diseases","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#e11d48","description":"Penyempitan pembuluh darah koroner yang mengurangi suplai darah dan oksigen ke otot jantung."},"DIABETES MELLITUS (E10-E14)":{"code":"E10–E14","name_id":"Diabetes Melitus","name_en":"Diabetes Mellitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#7c3aed","description":"Gangguan metabolik kronis yang ditandai dengan kadar gula darah tinggi (hiperglikemia)."},"PNEUMONIA (J12-J18)":{"code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","name_en":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","color":"#0284c7","description":"Infeksi akut pada jaringan paru-paru (alveoli) akibat bakteri, virus, atau mikroorganisme lain."},"RENAL FAILURE (N17-N19)":{"code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","name_en":"Renal Failure","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#4f46e5","description":"Penurunan fungsi ginjal dalam menyaring limbah metabolik dan cairan dari dalam darah."},"TUBERCULOSIS (A15-A19)":{"code":"A15–A19","name_id":"Tuberkulosis (TBC)","name_en":"Tuberculosis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","color":"#059669","description":"Penyakit infeksi menular akibat bakteri Mycobacterium tuberculosis yang terutama menyerang paru."},"HEART FAILURE (I50)":{"code":"I50","name_id":"Gagal Jantung","name_en":"Heart Failure","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#e11d48","description":"Kondisi ketika otot jantung tidak mampu memompa darah secara memadai ke seluruh tubuh."},"STROKE (I64)":{"code":"I64","name_id":"Stroke (Serebrovaskular)","name_en":"Stroke, not specified as haemorrhage or infarction","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#e11d48","description":"Gangguan aliran darah akut ke otak yang menyebabkan kerusakan jaringan sistem saraf pusat."},"SEPSIS (A41)":{"code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","name_en":"Other Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","color":"#059669","description":"Komplikasi infeksi berat yang memicu respons peradangan sistemik dan disfungsi organ."},"CERTAIN CONDITIONS ORIGINATING IN THE PERINATAL PERIOD (P00-P96)":{"code":"P00–P96","name_id":"Kondisi Periode Perinatal","name_en":"Certain Conditions Originating in the Perinatal Period","chapter_code":"Bab XVI","chapter_name":"Kondisi Tertentu Periode Perinatal","epidemiology_group":"Penyakit Infeksi & Perinatal","color":"#db2777","description":"Kondisi medis yang bermula pada masa perinatal (sekitar kelahiran hingga minggu pertama kehidupan)."},"DISEASES OF LIVER (K70-K77)":{"code":"K70–K77","name_id":"Penyakit Hati (Liver)","name_en":"Diseases of Liver","chapter_code":"Bab XI","chapter_name":"Sistem Pencernaan","epidemiology_group":"Penyakit Tidak Menular (PTM)","color":"#ca8a04","description":"Gangguan kronis maupun akut pada organ hati, termasuk sirosis dan gagal fungsi hati."}},"short_labels":{"HYPERTENSIVE DISEASES (I10-I15)":"Hipertensi","NEOPLASMS (C00-C97)":"Neoplasma (Kanker)","ISCHAEMIC HEART DISEASES (I20-I25)":"Jantung Iskemik","DIABETES MELLITUS (E10-E14)":"Diabetes Melitus","PNEUMONIA (J12-J18)":"Pneumonia","RENAL FAILURE (N17-N19)":"Gagal Ginjal","TUBERCULOSIS (A15-A19)":"Tuberkulosis (TBC)","HEART FAILURE (I50)":"Gagal Jantung","STROKE (I64)":"Stroke","SEPSIS (A41)":"Sepsis","CERTAIN CONDITIONS ORIGINATING IN THE PERINATAL PERIOD (P00-P96)":"Kondisi Perinatal","DISEASES OF LIVER (K70-K77)":"Penyakit Hati"},"records":[{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":29,"rank_in_region":1,"region_total":84,"share_in_region_pct":34.52},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":16,"rank_in_region":2,"region_total":84,"share_in_region_pct":19.05},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"CERTAIN CONDITIONS ORIGINATING IN THE PERINATAL PERIOD (P00-P96)","code":"P00–P96","name_id":"Kondisi Periode Perinatal","short_label":"Kondisi Perinatal","chapter_code":"Bab XVI","chapter_name":"Kondisi Tertentu Periode Perinatal","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":8,"rank_in_region":3,"region_total":84,"share_in_region_pct":9.52},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":8,"rank_in_region":4,"region_total":84,"share_in_region_pct":9.52},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":5,"rank_in_region":5,"region_total":84,"share_in_region_pct":5.95},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":5,"rank_in_region":6,"region_total":84,"share_in_region_pct":5.95},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"SEPSIS (A41)","code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","short_label":"Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":4,"rank_in_region":7,"region_total":84,"share_in_region_pct":4.76},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"DISEASES OF LIVER (K70-K77)","code":"K70–K77","name_id":"Penyakit Hati (Liver)","short_label":"Penyakit Hati","chapter_code":"Bab XI","chapter_name":"Sistem Pencernaan","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":3,"rank_in_region":8,"region_total":84,"share_in_region_pct":3.57},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":3,"rank_in_region":9,"region_total":84,"share_in_region_pct":3.57},{"periode_data":2025,"wilayah":"KAB. ADM. KEP. SERIBU","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":3,"rank_in_region":10,"region_total":84,"share_in_region_pct":3.57},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"NEOPLASMS (C00-C97)","code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","short_label":"Neoplasma (Kanker)","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":1005,"rank_in_region":1,"region_total":6570,"share_in_region_pct":15.3},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":895,"rank_in_region":2,"region_total":6570,"share_in_region_pct":13.62},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":825,"rank_in_region":3,"region_total":6570,"share_in_region_pct":12.56},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":806,"rank_in_region":4,"region_total":6570,"share_in_region_pct":12.27},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":671,"rank_in_region":5,"region_total":6570,"share_in_region_pct":10.21},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":570,"rank_in_region":6,"region_total":6570,"share_in_region_pct":8.68},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"SEPSIS (A41)","code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","short_label":"Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":551,"rank_in_region":7,"region_total":6570,"share_in_region_pct":8.39},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"TUBERCULOSIS (A15-A19)","code":"A15–A19","name_id":"Tuberkulosis (TBC)","short_label":"Tuberkulosis (TBC)","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":511,"rank_in_region":8,"region_total":6570,"share_in_region_pct":7.78},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":427,"rank_in_region":9,"region_total":6570,"share_in_region_pct":6.5},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA BARAT","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":309,"rank_in_region":10,"region_total":6570,"share_in_region_pct":4.7},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":845,"rank_in_region":1,"region_total":5555,"share_in_region_pct":15.21},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":806,"rank_in_region":2,"region_total":5555,"share_in_region_pct":14.51},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"NEOPLASMS (C00-C97)","code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","short_label":"Neoplasma (Kanker)","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":772,"rank_in_region":3,"region_total":5555,"share_in_region_pct":13.9},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":638,"rank_in_region":4,"region_total":5555,"share_in_region_pct":11.49},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":602,"rank_in_region":5,"region_total":5555,"share_in_region_pct":10.84},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":562,"rank_in_region":6,"region_total":5555,"share_in_region_pct":10.12},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"SEPSIS (A41)","code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","short_label":"Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":411,"rank_in_region":7,"region_total":5555,"share_in_region_pct":7.4},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"TUBERCULOSIS (A15-A19)","code":"A15–A19","name_id":"Tuberkulosis (TBC)","short_label":"Tuberkulosis (TBC)","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":356,"rank_in_region":8,"region_total":5555,"share_in_region_pct":6.41},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":292,"rank_in_region":9,"region_total":5555,"share_in_region_pct":5.26},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA SELATAN","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":271,"rank_in_region":10,"region_total":5555,"share_in_region_pct":4.88},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":1262,"rank_in_region":1,"region_total":8008,"share_in_region_pct":15.76},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"NEOPLASMS (C00-C97)","code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","short_label":"Neoplasma (Kanker)","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":1173,"rank_in_region":2,"region_total":8008,"share_in_region_pct":14.65},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":1107,"rank_in_region":3,"region_total":8008,"share_in_region_pct":13.82},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":929,"rank_in_region":4,"region_total":8008,"share_in_region_pct":11.6},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":890,"rank_in_region":5,"region_total":8008,"share_in_region_pct":11.11},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":833,"rank_in_region":6,"region_total":8008,"share_in_region_pct":10.4},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"TUBERCULOSIS (A15-A19)","code":"A15–A19","name_id":"Tuberkulosis (TBC)","short_label":"Tuberkulosis (TBC)","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":507,"rank_in_region":7,"region_total":8008,"share_in_region_pct":6.33},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":468,"rank_in_region":8,"region_total":8008,"share_in_region_pct":5.84},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":443,"rank_in_region":9,"region_total":8008,"share_in_region_pct":5.53},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA TIMUR","icdx":"SEPSIS (A41)","code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","short_label":"Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":396,"rank_in_region":10,"region_total":8008,"share_in_region_pct":4.95},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":935,"rank_in_region":1,"region_total":5085,"share_in_region_pct":18.39},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"NEOPLASMS (C00-C97)","code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","short_label":"Neoplasma (Kanker)","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":730,"rank_in_region":2,"region_total":5085,"share_in_region_pct":14.36},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":656,"rank_in_region":3,"region_total":5085,"share_in_region_pct":12.9},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":500,"rank_in_region":4,"region_total":5085,"share_in_region_pct":9.83},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":476,"rank_in_region":5,"region_total":5085,"share_in_region_pct":9.36},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":432,"rank_in_region":6,"region_total":5085,"share_in_region_pct":8.5},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"TUBERCULOSIS (A15-A19)","code":"A15–A19","name_id":"Tuberkulosis (TBC)","short_label":"Tuberkulosis (TBC)","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":404,"rank_in_region":7,"region_total":5085,"share_in_region_pct":7.94},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":372,"rank_in_region":8,"region_total":5085,"share_in_region_pct":7.32},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":357,"rank_in_region":9,"region_total":5085,"share_in_region_pct":7.02},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA UTARA","icdx":"CERTAIN CONDITIONS ORIGINATING IN THE PERINATAL PERIOD (P00-P96)","code":"P00–P96","name_id":"Kondisi Periode Perinatal","short_label":"Kondisi Perinatal","chapter_code":"Bab XVI","chapter_name":"Kondisi Tertentu Periode Perinatal","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":223,"rank_in_region":10,"region_total":5085,"share_in_region_pct":4.39},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"HYPERTENSIVE DISEASES (I10-I15)","code":"I10–I15","name_id":"Penyakit Hipertensi","short_label":"Hipertensi","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":578,"rank_in_region":1,"region_total":3397,"share_in_region_pct":17.02},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"NEOPLASMS (C00-C97)","code":"C00–C97","name_id":"Neoplasma Ganas (Kanker)","short_label":"Neoplasma (Kanker)","chapter_code":"Bab II","chapter_name":"Neoplasma (Kanker & Tumor)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":490,"rank_in_region":2,"region_total":3397,"share_in_region_pct":14.42},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"ISCHAEMIC HEART DISEASES (I20-I25)","code":"I20–I25","name_id":"Penyakit Jantung Iskemik (Koroner)","short_label":"Jantung Iskemik","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":475,"rank_in_region":3,"region_total":3397,"share_in_region_pct":13.98},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"DIABETES MELLITUS (E10-E14)","code":"E10–E14","name_id":"Diabetes Melitus","short_label":"Diabetes Melitus","chapter_code":"Bab IV","chapter_name":"Endokrin, Nutrisi & Metabolik","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":394,"rank_in_region":4,"region_total":3397,"share_in_region_pct":11.6},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"PNEUMONIA (J12-J18)","code":"J12–J18","name_id":"Pneumonia (Infeksi Paru Akut)","short_label":"Pneumonia","chapter_code":"Bab X","chapter_name":"Sistem Pernapasan","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":373,"rank_in_region":5,"region_total":3397,"share_in_region_pct":10.98},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"RENAL FAILURE (N17-N19)","code":"N17–N19","name_id":"Gagal Ginjal (Akut & Kronis)","short_label":"Gagal Ginjal","chapter_code":"Bab XIV","chapter_name":"Sistem Kemih (Genitourinari)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":318,"rank_in_region":6,"region_total":3397,"share_in_region_pct":9.36},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"TUBERCULOSIS (A15-A19)","code":"A15–A19","name_id":"Tuberkulosis (TBC)","short_label":"Tuberkulosis (TBC)","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":262,"rank_in_region":7,"region_total":3397,"share_in_region_pct":7.71},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"HEART FAILURE (I50)","code":"I50","name_id":"Gagal Jantung","short_label":"Gagal Jantung","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":191,"rank_in_region":8,"region_total":3397,"share_in_region_pct":5.62},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"STROKE (I64)","code":"I64","name_id":"Stroke (Serebrovaskular)","short_label":"Stroke","chapter_code":"Bab IX","chapter_name":"Sistem Sirkulasi (Kardiovaskular)","epidemiology_group":"Penyakit Tidak Menular (PTM)","jumlah":181,"rank_in_region":9,"region_total":3397,"share_in_region_pct":5.33},{"periode_data":2025,"wilayah":"KOTA ADM. JAKARTA PUSAT","icdx":"SEPSIS (A41)","code":"A41","name_id":"Sepsis (Infeksi Sistemik Berat)","short_label":"Sepsis","chapter_code":"Bab I","chapter_name":"Penyakit Infeksi & Parasitik","epidemiology_group":"Penyakit Infeksi & Perinatal","jumlah":135,"rank_in_region":10,"region_total":3397,"share_in_region_pct":3.97}]};
+
+    const REGIONS = [
+      'ALL',
+      'KOTA ADM. JAKARTA TIMUR',
+      'KOTA ADM. JAKARTA BARAT',
+      'KOTA ADM. JAKARTA SELATAN',
+      'KOTA ADM. JAKARTA UTARA',
+      'KOTA ADM. JAKARTA PUSAT',
+      'KAB. ADM. KEP. SERIBU'
+    ];
+
+    const SHORT_NAME = {
+      'ALL': 'Semua Wilayah (DKI Jakarta)',
+      'KOTA ADM. JAKARTA TIMUR': 'Jakarta Timur',
+      'KOTA ADM. JAKARTA BARAT': 'Jakarta Barat',
+      'KOTA ADM. JAKARTA SELATAN': 'Jakarta Selatan',
+      'KOTA ADM. JAKARTA UTARA': 'Jakarta Utara',
+      'KOTA ADM. JAKARTA PUSAT': 'Jakarta Pusat',
+      'KAB. ADM. KEP. SERIBU': 'Kep. Seribu'
+    };
+
+    let state = {
+      region: 'ALL',
+      metric: 'count' // 'count' | 'pct'
+    };
+
+    function fmtNum(n) {
+      return Number(n).toLocaleString('id-ID');
+    }
+
+    function fmtPct(n) {
+      return Number(n).toFixed(2).replace('.', ',') + '%';
+    }
+
+    function getRegionData(region) {
+      const total = region === 'ALL' ? DATASET.grand_total : DATASET.region_totals[region];
+      const map = {};
+      for (const r of DATASET.records) {
+        if (region !== 'ALL' && r.wilayah !== region) continue;
+        if (!map[r.icdx]) {
+          const meta = DATASET.icd_metadata[r.icdx];
+          map[r.icdx] = {
+            icdx: r.icdx,
+            code: meta.code,
+            name_id: meta.name_id,
+            short_label: DATASET.short_labels[r.icdx] || meta.name_id,
+            name_en: meta.name_en,
+            chapter_code: meta.chapter_code,
+            chapter_name: meta.chapter_name,
+            color: meta.color,
+            description: meta.description,
+            jumlah: 0
+          };
+        }
+        map[r.icdx].jumlah += r.jumlah;
+      }
+      const items = Object.values(map).sort((a, b) => b.jumlah - a.jumlah);
+      items.forEach((d, idx) => {
+        d.rank = idx + 1;
+        d.pct = (d.jumlah / total) * 100;
+      });
+      return { total, items };
+    }
+
+    function renderFilterButtons() {
+      const wrap = document.getElementById('region-buttons');
+      wrap.innerHTML = REGIONS.map(r => {
+        const active = state.region === r ? 'active' : '';
+        return `<button class="pill-btn ${active}" onclick="selectRegion('${r}')">${SHORT_NAME[r]}</button>`;
+      }).join('');
+
+      REGIONS.slice(1).forEach(r => {
+        const el = document.getElementById('map-reg-' + r);
+        if (!el) return;
+        el.classList.remove('selected', 'dimmed');
+        if (state.region !== 'ALL') {
+          if (state.region === r) el.classList.add('selected');
+          else el.classList.add('dimmed');
+        }
+      });
+    }
+
+    function renderKPIsAndInsight() {
+      const { total, items } = getRegionData(state.region);
+      const top1 = items[0];
+      const top2 = items[1];
+      const cardioSum = items.filter(d => d.chapter_code === 'Bab IX').reduce((s, d) => s + d.jumlah, 0);
+      const cardioPct = (cardioSum / total) * 100;
+
+      document.getElementById('kpi-badge-region').textContent = SHORT_NAME[state.region];
+      document.getElementById('kpi-total').textContent = fmtNum(total) + ' Jiwa';
+      document.getElementById('kpi-total-desc').textContent =
+        state.region === 'ALL'
+          ? 'Akumulasi 10 penyebab tertinggi di 6 wilayah DKI Jakarta'
+          : `Menyumbang ${fmtPct((total / DATASET.grand_total) * 100)} dari total kematian provinsi (28.699 jiwa)`;
+
+      document.getElementById('kpi-top-code').textContent = 'Kode ' + top1.code;
+      document.getElementById('kpi-top-name').textContent = top1.name_id;
+      document.getElementById('kpi-top-desc').textContent =
+        `${fmtNum(top1.jumlah)} jiwa (${fmtPct(top1.pct)} dari total ${SHORT_NAME[state.region]})`;
+
+      document.getElementById('kpi-cardio').textContent = fmtPct(cardioPct);
+      document.getElementById('kpi-cardio-desc').textContent =
+        `${fmtNum(cardioSum)} jiwa gabungan penyakit sistem sirkulasi (Bab IX)`;
+
+      const insightEl = document.getElementById('region-insight-box');
+      if (state.region === 'ALL') {
+        insightEl.innerHTML = `<strong>Sorotan Wilayah Provinsi:</strong> Volume kematian tertinggi berada di <strong>Jakarta Timur (8.008 jiwa / 27,90%)</strong> dan <strong>Jakarta Barat (6.570 jiwa / 22,89%)</strong>. Klik salah satu wilayah di peta untuk memfokuskan diagram.`;
+      } else {
+        insightEl.innerHTML = `<strong>Sorotan ${SHORT_NAME[state.region]}:</strong> Tercatat <strong class="mono">${fmtNum(total)} jiwa</strong> kematian. Peringkat #1 adalah <strong>${top1.name_id} (${top1.code})</strong> sebanyak <strong class="mono">${fmtNum(top1.jumlah)} jiwa (${fmtPct(top1.pct)})</strong>, disusul <strong>${top2.name_id}</strong> (<strong class="mono">${fmtNum(top2.jumlah)} jiwa / ${fmtPct(top2.pct)}</strong>).`;
+      }
+    }
+
+    function computeNiceMax(maxVal, isPct) {
+      if (isPct) {
+        if (maxVal <= 20) return 20;
+        if (maxVal <= 25) return 25;
+        if (maxVal <= 40) return 40;
+        return Math.ceil(maxVal / 10) * 10;
+      }
+      if (maxVal <= 40) return 40;
+      if (maxVal <= 800) return 800;
+      if (maxVal <= 1000) return 1000;
+      if (maxVal <= 1200) return 1200;
+      if (maxVal <= 1500) return 1500;
+      if (maxVal <= 5000) return 5000;
+      return Math.ceil(maxVal / 1000) * 1000;
+    }
+
+    function renderVerticalBarChart() {
+      const { items } = getRegionData(state.region);
+      const isPct = state.metric === 'pct';
+      document.getElementById('bar-title').textContent =
+        `Peringkat Penyebab Kematian Berdasarkan Kode ICD-10 — ${SHORT_NAME[state.region]}`;
+
+      const rawMax = Math.max(...items.map(d => isPct ? d.pct : d.jumlah), 1);
+      const yMax = computeNiceMax(rawMax, isPct);
+      const steps = 4;
+      const gridTicks = [];
+      for (let i = 0; i <= steps; i++) {
+        const val = (yMax / steps) * i;
+        const bottomPct = (i / steps) * 100;
+        const label = isPct ? val.toFixed(0) + '%' : fmtNum(Math.round(val));
+        gridTicks.push({ bottomPct, label });
+      }
+
+      const nCols = items.length;
+      const gridColsCss = `repeat(${nCols}, minmax(0, 1fr))`;
+
+      const gridlinesHtml = gridTicks.map(t => `
+        <div class="vchart-gridline" style="bottom: ${t.bottomPct}%;">
+          <span class="vchart-ylabel mono">${t.label}</span>
+        </div>
+      `).join('');
+
+      const barsHtml = items.map(d => {
+        const val = isPct ? d.pct : d.jumlah;
+        // Max bar height 84% of plot container so top labels have ample room inside plot
+        const heightPct = Math.max((val / yMax) * 84, 2.5);
+        const topLabel = isPct ? Number(d.pct).toFixed(1).replace('.', ',') + '%' : fmtNum(d.jumlah);
+        const subLabel = isPct ? '(' + fmtNum(d.jumlah) + ')' : '(' + Number(d.pct).toFixed(1).replace('.', ',') + '%)';
+
+        return `
+          <div class="vcol-wrapper"
+               onmousemove="showBarTooltip(event, '${d.icdx}')"
+               onmouseleave="hideTooltip()">
+            <div class="vcol-val mono">${topLabel}</div>
+            <div class="vcol-subval mono">${subLabel}</div>
+            <div class="vcol-bar" style="height: ${heightPct.toFixed(2)}%; background: linear-gradient(180deg, ${d.color} 0%, ${d.color}dd 100%);"></div>
+          </div>
+        `;
+      }).join('');
+
+      const xLabelsHtml = items.map(d => `
+        <div class="vcol-xlabel"
+             onmousemove="showBarTooltip(event, '${d.icdx}')"
+             onmouseleave="hideTooltip()">
+          <span class="mono" style="font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${d.color}18; color: ${d.color}; margin-bottom: 4px;">
+            #${d.rank} • ${d.code}
+          </span>
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-primary); line-height: 1.25;">
+            ${d.short_label}
+          </span>
+        </div>
+      `).join('');
+
+      const chartEl = document.getElementById('vertical-bar-chart');
+      chartEl.innerHTML = `
+        <div class="vchart-plot" style="grid-template-columns: ${gridColsCss};">
+          ${gridlinesHtml}
+          ${barsHtml}
+        </div>
+        <div class="vchart-xlabels" style="grid-template-columns: ${gridColsCss};">
+          ${xLabelsHtml}
+        </div>
+      `;
+    }
+
+    let currentPieSlices = [];
+
+    function renderDonutChart() {
+      const { total, items } = getRegionData(state.region);
+      document.getElementById('donut-subtitle').textContent =
+        `Komposisi bagian terhadap keseluruhan (100%) — ${SHORT_NAME[state.region]}`;
+
+      const chaptersMap = {};
+      for (const d of items) {
+        if (!chaptersMap[d.chapter_code]) {
+          chaptersMap[d.chapter_code] = {
+            chapter_code: d.chapter_code,
+            chapter_name: d.chapter_name,
+            color: d.color,
+            jumlah: 0,
+            diseases: []
+          };
+        }
+        chaptersMap[d.chapter_code].jumlah += d.jumlah;
+        chaptersMap[d.chapter_code].diseases.push(d);
+      }
+
+      const rawChapters = Object.values(chaptersMap).sort((a, b) => b.jumlah - a.jumlah);
+      rawChapters.forEach(c => {
+        c.pct = (c.jumlah / total) * 100;
+      });
+
+      // Aturan Pie Chart: Urutkan dari terbesar ke terkecil searah jarum jam dari jam 12,
+      // dan gabungkan kategori yang proporsinya kecil (< 5%) ke dalam "Bab Lainnya" di akhir putaran
+      const mainSlices = [];
+      const minorChapters = [];
+      for (const c of rawChapters) {
+        if (c.pct >= 5.0 && mainSlices.length < 6) {
+          mainSlices.push(c);
+        } else {
+          minorChapters.push(c);
+        }
+      }
+
+      if (minorChapters.length === 1 && mainSlices.length < 6 && minorChapters[0].pct >= 3.5) {
+        mainSlices.push(minorChapters[0]);
+      } else if (minorChapters.length > 0) {
+        const otherSum = minorChapters.reduce((s, c) => s + c.jumlah, 0);
+        const otherDiseases = [];
+        minorChapters.forEach(c => otherDiseases.push(...c.diseases));
+        mainSlices.push({
+          chapter_code: 'LAINNYA',
+          chapter_name: 'Bab Lainnya (' + minorChapters.map(c => c.chapter_code).join(', ') + ')',
+          color: '#64748b',
+          jumlah: otherSum,
+          pct: (otherSum / total) * 100,
+          diseases: otherDiseases
+        });
+      }
+
+      currentPieSlices = mainSlices;
+
+      const cx = 120;
+      const cy = 120;
+      const r = 104;
+      let startAngle = -Math.PI / 2; // Mulai dari arah jam 12 tepat
+
+      const pathsHtml = [];
+      const labelsHtml = [];
+
+      mainSlices.forEach((slice, idx) => {
+        const sliceAngle = (slice.pct / 100) * (2 * Math.PI);
+        const endAngle = startAngle + sliceAngle;
+        const midAngle = startAngle + sliceAngle / 2;
+
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = sliceAngle > Math.PI ? 1 : 0;
+
+        const dPath = mainSlices.length === 1
+          ? `M ${cx},${cy - r} A ${r},${r} 0 1,1 ${cx - 0.01},${cy - r} Z`
+          : `M ${cx},${cy} L ${x1.toFixed(2)},${y1.toFixed(2)} A ${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`;
+
+        pathsHtml.push(`
+          <path class="pie-slice"
+                d="${dPath}"
+                fill="${slice.color}"
+                onmousemove="showChapterTooltip(event, ${idx})"
+                onmouseleave="hideTooltip()" />
+        `);
+
+        // Tampilkan label % langsung di dalam juring jika proporsi >= 6%
+        if (slice.pct >= 6.0) {
+          const labelR = slice.pct > 25 ? r * 0.56 : r * 0.67;
+          const lx = cx + labelR * Math.cos(midAngle);
+          const ly = cy + labelR * Math.sin(midAngle);
+          labelsHtml.push(`
+            <text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" text-anchor="middle" class="pie-label mono">
+              ${slice.pct.toFixed(1).replace('.', ',')}%
+            </text>
+          `);
+        }
+
+        startAngle = endAngle;
+      });
+
+      const svg = document.getElementById('pie-chart-svg');
+      svg.innerHTML = pathsHtml.join('') + labelsHtml.join('');
+
+      const legend = document.getElementById('donut-legend');
+      legend.innerHTML = mainSlices.map((c, idx) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 8px; background: var(--bg-subtle); font-size: 12px; cursor: pointer;"
+             onmousemove="showChapterTooltip(event, ${idx})"
+             onmouseleave="hideTooltip()">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 11px; height: 11px; border-radius: 3px; background: ${c.color}; flex-shrink: 0;"></span>
+            <span style="font-weight: 700; color: var(--text-primary);">${c.chapter_code === 'LAINNYA' ? c.chapter_name : c.chapter_code + ': ' + c.chapter_name}</span>
+          </div>
+          <div class="mono" style="font-weight: 800; color: var(--text-primary); white-space: nowrap; margin-left: 8px;">
+            ${fmtPct(c.pct)} <span style="font-weight: 500; color: var(--text-muted); font-size: 11px;">(${fmtNum(c.jumlah)} jiwa)</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Tooltips
+    function moveTooltip(e) {
+      const tt = document.getElementById('tooltip');
+      let x = e.clientX + 14;
+      let y = e.clientY + 14;
+      if (x + 320 > window.innerWidth) x = e.clientX - 325;
+      if (y + 190 > window.innerHeight) y = e.clientY - 190;
+      tt.style.left = Math.max(8, x) + 'px';
+      tt.style.top = Math.max(8, y) + 'px';
+    }
+
+    function showMapTooltip(e, reg) {
+      const { total, items } = getRegionData(reg);
+      const top1 = items[0];
+      const top2 = items[1];
+      const top3 = items[2];
+      const tt = document.getElementById('tooltip');
+      tt.innerHTML = `
+        <div style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Wilayah Administrasi</div>
+        <div style="font-size: 15px; font-weight: 800; margin: 2px 0 6px;">${reg}</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="color: #94a3b8;">Total Kematian:</span>
+          <strong class="mono">${fmtNum(total)} jiwa (${fmtPct((total / DATASET.grand_total) * 100)} DKI)</strong>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px; margin-top: 6px;">
+          <div style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 2px;"><strong>#1:</strong> ${top1.name_id} (<span class="mono">${fmtNum(top1.jumlah)} jiwa / ${fmtPct(top1.pct)}</span>)</div>
+          <div style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 2px;"><strong>#2:</strong> ${top2.name_id} (<span class="mono">${fmtNum(top2.jumlah)} jiwa / ${fmtPct(top2.pct)}</span>)</div>
+          <div style="font-size: 11.5px; color: #cbd5e1;"><strong>#3:</strong> ${top3.name_id} (<span class="mono">${fmtNum(top3.jumlah)} jiwa / ${fmtPct(top3.pct)}</span>)</div>
+        </div>
+        <div style="margin-top: 6px; font-size: 11px; color: #fb7185; font-weight: 700;">Klik wilayah untuk memfilter seluruh diagram</div>
+      `;
+      tt.classList.add('show');
+      moveTooltip(e);
+    }
+
+    function showBarTooltip(e, icdx) {
+      const { items } = getRegionData(state.region);
+      const d = items.find(x => x.icdx === icdx);
+      if (!d) return;
+      const tt = document.getElementById('tooltip');
+      tt.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span class="mono" style="font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: ${d.color}; color: #fff;">ICD-10: ${d.code}</span>
+          <span class="mono" style="font-size: 11.5px; color: #94a3b8;">Peringkat #${d.rank}</span>
+        </div>
+        <div style="font-size: 15px; font-weight: 800;">${d.name_id}</div>
+        <div style="font-size: 11.5px; color: #94a3b8; margin-bottom: 6px;">${d.icdx} • ${d.chapter_code} (${d.chapter_name})</div>
+        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 8px;">${d.description}</div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px; display: flex; justify-content: space-between;">
+          <span style="color: #94a3b8;">Jumlah (${SHORT_NAME[state.region]}):</span>
+          <strong class="mono">${fmtNum(d.jumlah)} jiwa (${fmtPct(d.pct)})</strong>
+        </div>
+      `;
+      tt.classList.add('show');
+      moveTooltip(e);
+    }
+
+    function showChapterTooltip(e, sliceIdx) {
+      const slice = currentPieSlices[sliceIdx];
+      if (!slice) return;
+      const tt = document.getElementById('tooltip');
+      const titleText = slice.chapter_code === 'LAINNYA'
+        ? slice.chapter_name
+        : slice.chapter_code + ': ' + slice.chapter_name;
+      tt.innerHTML = `
+        <div style="font-size: 11px; font-weight: 800; color: #fda4af; text-transform: uppercase;">Juring Diagram Lingkaran (Pie Chart)</div>
+        <div style="font-size: 15px; font-weight: 800; margin: 2px 0 6px;">${titleText}</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #94a3b8;">Proporsi &amp; Jumlah:</span>
+          <strong class="mono">${fmtPct(slice.pct)} (${fmtNum(slice.jumlah)} jiwa)</strong>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px; font-size: 11.5px; color: #cbd5e1;">
+          <strong>Rincian Diagnosis ICD-10:</strong><br/>
+          ${slice.diseases.map(d => '• ' + d.name_id + ' (' + d.code + '): ' + fmtNum(d.jumlah) + ' jiwa (' + fmtPct(d.pct) + ')').join('<br/>')}
+        </div>
+      `;
+      tt.classList.add('show');
+      moveTooltip(e);
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').classList.remove('show');
+    }
+
+    function selectRegion(r) {
+      state.region = r;
+      updateAll();
+    }
+
+    function setMetric(m) {
+      state.metric = m;
+      document.getElementById('btn-metric-count').classList.toggle('active', m === 'count');
+      document.getElementById('btn-metric-pct').classList.toggle('active', m === 'pct');
+      renderVerticalBarChart();
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+      document.getElementById('theme-text').textContent = next === 'dark' ? 'Mode Terang' : 'Mode Gelap';
+    }
+
+    function downloadCSV() {
+      const headers = ['periode_data','wilayah','peringkat_wilayah','kode_icd10','nama_penyakit_id','icdx_asli','bab_icd10','nama_bab_icd10','jumlah_kematian','persentase_wilayah'];
+      const lines = DATASET.records.map(r => [
+        r.periode_data,
+        `"${r.wilayah}"`,
+        r.rank_in_region,
+        `"${r.code}"`,
+        `"${r.name_id}"`,
+        `"${r.icdx}"`,
+        `"${r.chapter_code}"`,
+        `"${r.chapter_name}"`,
+        r.jumlah,
+        r.share_in_region_pct
+      ].join(','));
+      const blob = new Blob([[headers.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dataset_kematian_icd10_dki_jakarta_2025.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function updateAll() {
+      renderFilterButtons();
+      renderKPIsAndInsight();
+      renderDonutChart();
+      renderVerticalBarChart();
+    }
+
+    window.addEventListener('DOMContentLoaded', updateAll);
+  </script>
+</body>
+</html>
